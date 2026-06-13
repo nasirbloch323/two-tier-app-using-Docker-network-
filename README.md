@@ -68,8 +68,7 @@ docker --version
 ### Step 2: Project Clone Karo
 ```bash
 # GitHub se clone karo
-git clone https://github.com/Umair1012/two-tier-flask-app.git
-
+https://github.com/nasirbloch323/two-tier-app-using-Docker-network-.git
 # Folder mein jao
 cd two-tier-flask-app
 
