@@ -1,91 +1,259 @@
- 
-# Two-Tier Flask App with MySQL
+# 🐳 Two-Tier Flask + MySQL App
+### Deployed using Docker Networks on AWS EC2
 
-This is a simple Flask app that interacts with a MySQL database. The app allows users to submit messages, which are then stored in the database and displayed on the frontend.
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-000000?style=flat&logo=flask&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat&logo=amazon-aws&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
 
-## Prerequisites
+> A Two-Tier web application with Flask backend and MySQL database — connected using Docker Bridge Network and deployed on AWS EC2.
 
-Before you begin, make sure you have the following installed:
+---
 
-- Git (optional, for cloning the repository)
-- EC2 insatnce
+## 🏗️ Architecture
 
-## Setup
+```
+┌─────────────────────────────────────┐
+│         AWS EC2 Instance            │
+│                                     │
+│  ┌──────────────┐  flask-net  ┌─────────────┐  │
+│  │  Flask App   │ ──────────► │    MySQL    │  │
+│  │  Port: 5000  │             │  Port: 3306 │  │
+│  └──────────────┘             └─────────────┘  │
+│                                     │
+└─────────────────────────────────────┘
+```
 
-1. Clone this repository (if you haven't already):
+---
 
-   ```bash
-   git clone https://github.com/your-username/your-repo-name.git
-   ```
+## 🌐 Live Demo
+```
+http://YOUR_EC2_IP:5000
+```
 
-2. Navigate to the project directory:
+---
 
-   ```bash
-   cd your-repo-name
-   ```
+## 🛠️ Tech Stack
+| Technology | Usage |
+|-----------|-------|
+| Python/Flask | Backend |
+| MySQL 5.7 | Database |
+| Docker | Containerization |
+| Docker Network | Container Communication |
+| AWS EC2 | Cloud Deployment |
 
-3. Create a `.env` file in the project directory to store your MySQL environment variables:
+---
 
-   ```bash
-   touch .env
-   ```
+## 🚀 Step-by-Step Deployment
 
-4. Open the `.env` file and add your MySQL configuration:
+### Step 1: Install Dependencies
+```bash
+# System update karo
+sudo apt update
 
-   ```
-   MYSQL_HOST=mysql
-   MYSQL_USER=your_username
-   MYSQL_PASSWORD=your_password
-   MYSQL_DB=your_database
-   ```
+# Docker aur Git install karo
+sudo apt install -y docker.io git
 
-## Usage
+# Docker permission do
+sudo usermod -aG docker ubuntu
+newgrp docker
 
-1. Update System and Install Required Packages:
+# Check karo
+docker --version
+```
 
-   ```bash
-   sudo apt update && sudo apt upgrade -y
-   sudo apt install python3-pip python3-venv mysql-server -y
+---
 
-   ```
+### Step 2: Project Clone Karo
+```bash
+# GitHub se clone karo
+git clone https://github.com/Umair1012/two-tier-flask-app.git
 
-2. Access the Flask app in your web browser:
- ```bash
-   - http://ec2-instance_ip:5000
-   ```
+# Folder mein jao
+cd two-tier-flask-app
 
-3. Create the `messages` table in your MySQL database:
+# Files dekho
+ls
+```
 
-   - Use a MySQL client or tool (e.g., phpMyAdmin) to execute the following SQL commands:
-   
-     ```sql
-     CREATE TABLE messages (
-         id INT AUTO_INCREMENT PRIMARY KEY,
-         message TEXT
-     );
-     ```
-4. Run the Flask App:
+---
 
-   ```bash
-   python app.py --host=0.0.0.0 --port=5000
+### Step 3: Docker Network Banao
+```bash
+# Private network banao
+# Dono containers is network se communicate karenge
+docker network create flask-net
 
-   ```
-5. Interact with the app:
+# Network verify karo
+docker network ls
+```
 
-   - Visit http://ec2-instance-ip to see the frontend. You can submit new messages using the form.
+---
 
+### Step 4: Dockerfile Banao
+```bash
+# Dockerfile create karo
+nano Dockerfile
+```
 
-## Notes
+```dockerfile
+# Base image
+FROM python:3.10-slim
 
-- Make sure to replace placeholders (e.g., `your_username`, `your_password`, `your_database`) with your actual MySQL configuration.
+# Working directory set karo
+WORKDIR /app
 
-- This is a basic setup for demonstration purposes. In a production environment, you should follow best practices for security and performance.
+# Sari files copy karo
+COPY . .
 
-- Be cautious when executing SQL queries directly. Validate and sanitize user inputs to prevent vulnerabilities like SQL injection.
+# Dependencies install karo
+RUN pip install -r requirements.txt
 
-##  Notes License
-<pre>This project is open-source and available under the MIT License.</pre>
+# Port open karo
+EXPOSE 5000
 
-## 📬 Contact
-<pre>For questions, feedback, or contributions, feel free to open an issue or submit a pull request.</pre>
+# App start karo
+CMD ["python", "app.py"]
+```
 
+---
+
+### Step 5: Flask Image Build Karo
+```bash
+# Docker image build karo
+docker build -t flask-app .
+
+# Images verify karo
+docker images
+```
+
+---
+
+### Step 6: MySQL Container Chalao
+```bash
+# MySQL container start karo
+# flask-net network se connect karo
+docker run -d \
+--name mysql \
+--network flask-net \
+-e MYSQL_DATABASE=mydb \
+-e MYSQL_ROOT_PASSWORD=admin \
+-p 3306:3306 \
+mysql:5.7
+
+# Check karo
+docker ps
+```
+
+---
+
+### Step 7: Flask App Container Chalao
+```bash
+# Flask container start karo
+# MySQL se connect karo environment variables se
+docker run -d \
+--name flask-app \
+--network flask-net \
+-e MYSQL_HOST=mysql \
+-e MYSQL_USER=root \
+-e MYSQL_PASSWORD=admin \
+-e MYSQL_DB=mydb \
+-p 5000:5000 \
+flask-app
+
+# Check karo
+docker ps
+```
+
+---
+
+### Step 8: Connection Verify Karo
+```bash
+# Network inspect karo
+docker network inspect flask-net
+
+# Flask container mein ghuso
+docker exec -it flask-app /bin/sh
+
+# MySQL ping karo
+ping mysql
+
+# Bahar aao
+exit
+
+# Logs dekho
+docker logs flask-app
+```
+
+---
+
+### Step 9: AWS Security Group
+```
+EC2 → Security Groups → Inbound Rules:
+
+Port 5000 → Flask App  → 0.0.0.0/0
+Port 3306 → MySQL      → 0.0.0.0/0
+Port 22   → SSH        → Your IP
+```
+
+---
+
+### Step 10: Browser Mein Kholo
+```bash
+# EC2 IP nikalo
+curl ifconfig.me
+
+# Browser mein:
+http://YOUR_EC2_IP:5000
+```
+
+---
+
+## ✅ Verify Sab Sahi Hai
+```bash
+# Containers dekho
+docker ps
+
+# Expected Output:
+# flask-app → Port 5000 ✅
+# mysql     → Port 3306 ✅
+
+# Network dekho
+docker network inspect flask-net
+# flask-app aur mysql dono network mein ✅
+```
+
+---
+
+## 📚 Key Concepts Learned
+```
+✅ Docker Network = Private road for containers
+✅ Bridge Network = Default secure network
+✅ Container Communication by Name
+✅ Environment Variables for Config
+✅ Two-Tier Architecture
+✅ AWS EC2 Deployment
+```
+
+---
+
+## 🔧 Useful Commands
+```bash
+# Containers stop karo
+docker stop flask-app mysql
+
+# Containers delete karo
+docker rm flask-app mysql
+
+# Network delete karo
+docker network rm flask-net
+
+# Images delete karo
+docker rmi flask-app mysql:5.7
+```
+
+---
+
+*Made with ❤️ by Nasir Baloch — DevOps Journey 🚀*
+*github.com/nasirbloch323*
